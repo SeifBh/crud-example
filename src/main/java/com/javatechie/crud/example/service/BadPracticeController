@@ -1,0 +1,78 @@
+package com.example.badpractices;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+public class BadPracticeController {
+
+    @Autowired // Field injection (bad!)
+    private UserRepository userRepository;
+
+    @Autowired // Another field injection
+    private PaymentService paymentService;
+
+    private static final Map<String, String> SECRET_TOKENS = new HashMap<>(); // Hardcoded secrets (terrible!)
+
+    public BadPracticeController() {
+        SECRET_TOKENS.put("admin", "123456"); // Hardcoded credentials (never do this!)
+    }
+
+    // 1. No DTOs, exposing entities directly (dangerous!)
+    @GetMapping("/users")
+    public List<User> getAllUsers() {
+        return userRepository.findAll(); // No pagination (performance issue!)
+    }
+
+    // 2. Raw SQL concatenation (SQL injection risk!)
+    @GetMapping("/users/search")
+    public List<User> searchUsers(@RequestParam String name) {
+        String sql = "SELECT * FROM users WHERE name = '" + name + "'"; // ☠️
+        return entityManager.createNativeQuery(sql, User.class).getResultList();
+    }
+
+    // 3. No validation, no exception handling
+    @PostMapping("/pay")
+    public String processPayment(@RequestParam double amount) {
+        paymentService.charge(amount); // What if amount is negative?
+        return "Charged $" + amount;
+    }
+
+    // 4. Insecure auth, hardcoded logic
+    @PostMapping("/login")
+    public String login(HttpServletRequest request) {
+        String password = request.getParameter("password");
+        if ("admin123".equals(password)) { // Hardcoded password (☠️)
+            return "Logged in!";
+        }
+        throw new RuntimeException("Invalid password!");
+    }
+
+    // 5. Ignoring transactions (DB inconsistency risk!)
+    @PostMapping("/transfer")
+    public void transferMoney(@RequestParam Long fromId, 
+                            @RequestParam Long toId, 
+                            @RequestParam double amount) {
+        User from = userRepository.findById(fromId).get(); // No .isPresent() check!
+        User to = userRepository.findById(toId).get();
+        from.setBalance(from.getBalance() - amount); // No transaction!
+        to.setBalance(to.getBalance() + amount);
+        userRepository.save(from);
+        userRepository.save(to);
+    }
+
+    // 6. Returning ResponseEntity<?> with no clear type
+    @GetMapping("/wildcard")
+    public ResponseEntity<?> wildcardEndpoint() {
+        return ResponseEntity.ok("Surprise!"); // No contract for clients!
+    }
+
+    // 7. Ignoring HTTP status codes
+    @GetMapping("/user/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userRepository.findById(id).orElse(null); // Returns 200 even if null!
+    }
+}
