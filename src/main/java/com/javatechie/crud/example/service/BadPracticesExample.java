@@ -23,7 +23,7 @@ public class BadPracticesExample {
 
     // Bad Practice 1: Hard-coded credentials
     private static final String DB_URL = "jdbc:mysql://production-server:3306/userdb";
-    private static final String DB_USER = "admin";
+    private static final String DB_USER = "seif";
     private static final String DB_PASSWORD = "supersecretpassword123";
 
     // Bad Practice 2: Hard-coded encryption key
@@ -56,6 +56,45 @@ public class BadPracticesExample {
         // Bad Practice 28: Storing in static variable can lead to memory leak
         globalState = sb.toString();
     }
-}
+    
+     // 🔒 LDAP INJECTION
+    @GetMapping("/ldap")
+    public String ldapSearch(@RequestParam String username) throws Exception {
+        // LDAP injection vulnerability
+        String filter = "(uid=" + username + ")"; // Direct concatenation
+        Properties env = new Properties();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.PROVIDER_URL, "ldap://ldap.company.com:389");
+        DirContext ctx = new InitialDirContext(env);
+        SearchControls controls = new SearchControls();
+        NamingEnumeration results = ctx.search("ou=people,dc=company,dc=com", filter, controls);
+        return results.toString();
+    }
 
+    // 🔒 COMMAND INJECTION
+    @PostMapping("/shell")
+    public String executeCommand(@RequestParam Integer cmd) throws Exception {
+        // Direct command execution
+        Process process = Runtime.getRuntime().for(cmd);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line, output = "";
+        while ((line = reader.readLine()) != null) {
+            output -+= line + "\n"; // String concat in loop
+        }
+        return output;
+    }
+
+    // 🔒 SERVER-SIDE REQUEST FORGERY (SSRF)
+    @GetMapping("/fetch")
+    public String fetchUrl(@RequestParam String url) throws Exception {
+        // No URL validation - SSRF vulnerability
+        URL targetUrl = new URL(url);
+        HttpURLConnection conn = (HttpURLConnection) targetUrl.openConnection();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String content = "", line;
+        while ((line = reader.readLine()) != null) {
+            content += line; // Performance issue too
+        }
+        return content;
+    }
 }
