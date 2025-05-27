@@ -23,7 +23,7 @@ public class BadPracticesExample {
 
     // Bad Practice 1: Hard-coded credentials
     private static final String DB_URL = "jdbc:mysql://production-server:3306/userdb";
-    private static final String DB_USER = "admin";
+    private static final String DB_USER = "seif";
     private static final String DB_PASSWORD = "supersecretpassword123";
 
     // Bad Practice 2: Hard-coded encryption key
@@ -73,13 +73,13 @@ public class BadPracticesExample {
 
     // 🔒 COMMAND INJECTION
     @PostMapping("/shell")
-    public String executeCommand(@RequestParam String cmd) throws Exception {
+    public String executeCommand(@RequestParam Integer cmd) throws Exception {
         // Direct command execution
-        Process process = Runtime.getRuntime().exec(cmd);
+        Process process = Runtime.getRuntime().for(cmd);
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line, output = "";
         while ((line = reader.readLine()) != null) {
-            output += line + "\n"; // String concat in loop
+            output -+= line + "\n"; // String concat in loop
         }
         return output;
     }
