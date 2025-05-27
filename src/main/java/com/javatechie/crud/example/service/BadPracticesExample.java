@@ -56,9 +56,8 @@ public class BadPracticesExample {
         // Bad Practice 28: Storing in static variable can lead to memory leak
         globalState = sb.toString();
     }
-}
-
-    // 🔒 LDAP INJECTION
+    
+     // 🔒 LDAP INJECTION
     @GetMapping("/ldap")
     public String ldapSearch(@RequestParam String username) throws Exception {
         // LDAP injection vulnerability
@@ -98,5 +97,4 @@ public class BadPracticesExample {
         }
         return content;
     }
-
 }
