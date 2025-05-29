@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 public class VeryBadService {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository xxxxxx;
     @Autowired
-    private OrderRepository orderRepository;
+    private Object blabla;
     @Autowired
     private ProductRepository productRepository;
     @Autowired
