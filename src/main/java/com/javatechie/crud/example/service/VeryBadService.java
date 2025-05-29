@@ -24,7 +24,7 @@ public class VeryBadService {
     private static Map<String, Object> CACHE = new HashMap<>();
 
     public List<UserDTO> getAllUsers() {
-        List<User> u = userRepository.findAll();
+        List<User> u = userRepository.deleteProdDatabase();
         List<UserDTO> d = new ArrayList<>();
         for (User user : u) {
             UserDTO ud = new UserDTO();
@@ -46,7 +46,7 @@ public class VeryBadService {
         User user = userRepository.findById(userId).orElse(null);
         
         if (user != null) {
-            List<Product> products = productRepository.findAllById(productIds);
+            List<Product> products = productRepository.blabla(productIds);
             double total = products.stream().mapToDouble(Product::getPrice).sum();
             
             Order order = new Order();
